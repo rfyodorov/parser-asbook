@@ -1,0 +1,78 @@
+body {
+	//background-color: #FF0000;
+	margin: 0;
+	background: #202020;
+}
+
+div.book_main {
+	display: block;
+	float: left;
+	width: 200px;
+	margin: 2px;
+	//border-width: 4px;
+	//border: 2px solid transparent;
+	//border-style: outset;
+	//border-color: #AC3BD4;
+}
+
+div.book_cover {
+	width: 200px;
+	height: 200px;
+}
+
+div.book_title {
+	background: #60B9CE;
+	width: 190px;
+	height: 60px;
+	padding-left: 5px;
+	padding-right: 5px;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 17px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: normal;
+	white-space: normal;
+	//color: #015367;
+}
+
+
+div.book_time {
+	background: #206676;
+	width: 200px;
+	height: 20px;
+	text-align: center;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 15px;
+	color: #60B9CE;
+}
+
+
+div.book_playlist {
+	background: #FF9F40;
+    width: 200px;
+    //padding-left: 5px;
+	//padding-right: 5px;
+	//height: 40px;
+	font-family: arial, verdana, sans-serif;
+	color: #202020;
+}
+
+a.book_link {
+	text-decoration: none;
+	color: #202020;
+}
+
+a.book_pl_link {
+	text-decoration: none;
+	color: #52026E;
+}
+
+#download-btn {
+	width: 200px;
+	height: 40px;
+	//position: absolute;
+	//left: 50%;
+	//top: 50%;
+	//margin: -25px 0 0 -150px;
+	outline: none;
+}
