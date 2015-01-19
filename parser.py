@@ -120,6 +120,7 @@ for book in books_list:
     cpl_sort.sort()
     for name in cpl_sort:
         page += current_playlist[name] + ' '
+    page = page[:-1]
 
     #for name, url in current_playlist.items():
     #    page += '    <a href=' + url + '> ' + name + ' <a><br>\n'
