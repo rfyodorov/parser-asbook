@@ -40,13 +40,14 @@ def print_header():
             '   <link rel="stylesheet" href="css/style.css" type="text/css">\n'
             '   </head>\n'
             '<body>\n'
-            '<div>\n'
+            '<div class="allpage">\n'
+            '<div class="books_block">\n'
             )
     return page
 
 
 def print_footer(count_download_button_id):
-    page = '</div>\n\n'
+    page = '</div>\n</div>\n'
 
     for count in range(1, count_download_button_id):
         page += ('<script src="js/multi-download.js"></script>\n'
@@ -60,103 +61,102 @@ def print_footer(count_download_button_id):
             '</html>\n')
     return page
 
+def getPage(page_number):
+    main_domain = 'http://asbook.net'
+    page = html.parse('%s/page/%s/' % (main_domain, page_number))
 
-# ---------------------------------------- start --------------------------------------
-main_domain = 'http://asbook.net'
+    books_list = page.getroot().find_class('b-showshort')
+    #print "Numbers of books on page: %s" % len(books_list)
 
-#page_number = 1
-#page = html.parse('%s/page/%s/' % (main_domain, page_number))
-page = html.parse('%s/' % (main_domain))
+    page = ""
+    page += print_header()
 
-books_list = page.getroot().find_class('b-showshort')
-#print "Numbers of books on page: %s" % len(books_list)
+    #if (0 != 1):
+    #    div_book = books_list[0].getchildren()
 
-page = ""
-page += print_header()
+    count_download_button_id = 1
+    for book in books_list:
+        div_book = book.getchildren()
+        #print "Count of div in one book %s" % len(div_book)
 
-#if (0 != 1):
-#    div_book = books_list[0].getchildren()
+        # Get Title
+        ahref = div_book[1].find_class('b-showshort__title_link')
+        book_title = ahref[0].text_content()
+        book_url = ahref[0].get('href')
 
-count_download_button_id = 1
-for book in books_list:
-    div_book = book.getchildren()
-    #print "Count of div in one book %s" % len(div_book)
+        # Get playlist
+        book_link = ahref[0].get('href')
+        playlist_url = getPlaylist(book_link)
 
-    # Get Title
-    ahref = div_book[1].find_class('b-showshort__title_link')
-    book_title = ahref[0].text_content()
-    book_url = ahref[0].get('href')
+        # Parse playlist
+        current_playlist = {}
+        current_playlist = parsePlaylist(playlist_url)
 
-    # Get playlist
-    book_link = ahref[0].get('href')
-    playlist_url = getPlaylist(book_link)
+        # Get cover
+        aimg = div_book[0].find_class('b-showshort__cover_image')
+        cover_url = aimg[0].get('src')
 
-    # Parse playlist
-    current_playlist = {}
-    current_playlist = parsePlaylist(playlist_url)
+        # Get time
+        atime = div_book[2].find_class('table b-showshort__data')
+        book_timerec = atime.pop().getchildren().pop().getchildren().pop(1).getchildren().pop().getchildren().pop(0).getchildren().pop(1).text_content()
 
-    # Get cover
-    aimg = div_book[0].find_class('b-showshort__cover_image')
-    cover_url = aimg[0].get('src')
+        # ----
+        # create html
+        page += ('<div class="book_main">\n'
+                ' \n'
+                '<div class="book_cover">\n'
+                '   <img src=' + cover_url + '>\n'
+                '</div>\n'
+                ' \n'
+                '<div class="book_title">\n'
+                '   <a class="book_link" href=' + book_url + ' target=_blank>' + book_title +'</a>\n'
+                '</div>\n'
+                ' \n'
+                '<div class="book_time">\n'
+                '   Time: ' + book_timerec + ' \n'
+                '</div>\n')
 
-    # Get time
-    atime = div_book[2].find_class('table b-showshort__data')
-    book_timerec = atime.pop().getchildren().pop().getchildren().pop(1).getchildren().pop().getchildren().pop(0).getchildren().pop(1).text_content()
+        page += ('<div class="book_playlist">\n'
+                '<button id="download-btn' + str(count_download_button_id) + '" class="btn btn-primary btn-lg" data-files="')
+ 
+        cpl_sort = current_playlist.keys()
+        cpl_sort.sort()
+        for name in cpl_sort:
+            page += current_playlist[name] + ' '
+        page = page[:-1]
 
-    # ----
-    # create html
+        #for name, url in current_playlist.items():
+        #    page += '    <a href=' + url + '> ' + name + ' <a><br>\n'
 
+        page += ('">Download all mp3</button></br>\n'
+                '</div>\n'
+                ' \n'
+                '</div>\n')
 
-    page += ('<div class="book_main">\n'
-            ' \n'
-            '<div class="book_cover">\n'
-            '   <img src=' + cover_url + '>\n'
-            '</div>\n'
-            ' \n'
-            '<div class="book_title">\n'
-            '   <a class="book_link" href=' + book_url + ' target=_blank>' + book_title +'</a>\n'
-            '</div>\n'
-            ' \n'
-            '<div class="book_time">\n'
-            '   Time: ' + book_timerec + ' \n'
+        count_download_button_id += 1
+
+    
+    page += ('</div>\n'
+            '<div class="navigate">\n'
+            ' <a class="navigate" href="/' + str(int(page_number)-1) + '"> ' + str(int(page_number)-1) + ' < </a> ' + str(page_number) +
+            ' <a class="navigate" href="/' + str(int(page_number)+1) + '">> ' + str(int(page_number)+1) + '</a>'
             '</div>\n')
 
-    page += ('<div class="book_playlist">\n'
-            '<button id="download-btn' + str(count_download_button_id) + '" class="btn btn-primary btn-lg" data-files="')
-
-    cpl_sort = current_playlist.keys()
-    cpl_sort.sort()
-    for name in cpl_sort:
-        page += current_playlist[name] + ' '
-    page = page[:-1]
-
-    #for name, url in current_playlist.items():
-    #    page += '    <a href=' + url + '> ' + name + ' <a><br>\n'
-
-    page += ('">Download all mp3</button></br>\n'
-            '</div>\n'
-            ' \n'
-            '</div>\n')
-
-    count_download_button_id += 1
-
-
-
-page += print_footer(count_download_button_id)
-# print page.encode("utf-8")
+    page += print_footer(count_download_button_id)
+    page_complete = page.encode("utf-8")
+    return page_complete
 
 # ---------------------- server ----------------------
-
 class myHandler(BaseHTTPRequestHandler):
 	
     #Handler for the GET requests
     def do_GET(self):
-        if self.path == "/":
+        if self.path[1:].isdigit():
             self.send_response(200)
             self.send_header('Content-type','text/html')
             self.end_headers()
 	    # Send the html message
-	    self.wfile.write(page.encode("utf-8"))
+	    self.wfile.write(getPage(self.path[1:]))
 
         try:
             #Check the file extension required and
