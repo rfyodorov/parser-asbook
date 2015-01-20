@@ -155,8 +155,13 @@ class myHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type','text/html')
             self.end_headers()
-	    # Send the html message
-	    self.wfile.write(getPage(self.path[1:]))
+            self.wfile.write(getPage(self.path[1:]))
+
+        if self.path == "/":
+            self.send_response(200)
+            self.send_header('Content-type','text/html')
+            self.end_headers()
+            self.wfile.write(getPage(1))
 
         try:
             #Check the file extension required and
