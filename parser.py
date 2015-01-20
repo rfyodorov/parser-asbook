@@ -1,8 +1,11 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 import lxml.html as html
 import urllib, json
-from pprint import pprint
-import ast
+from os import curdir, sep
+
+from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+PORT_NUMBER = 8000
 
 def getPlaylist(book_link):
     # Format string - http://asbook.net/abooks/detectives/6910-otravlenie-v-shutku-dzhon-dikson-karr.html
@@ -42,32 +45,39 @@ def print_header():
     return page
 
 
-def print_footer():
-    page = ('<div>'
-            ' \n'
-            '<script src="js/multi-download.js"></script>\n'
+def print_footer(count_download_button_id):
+    page = '</div>\n\n'
+
+    for count in range(1, count_download_button_id):
+        page += ('<script src="js/multi-download.js"></script>\n'
             '<script>\n'
-            'document.querySelector(\'#download-btn\').addEventListener(\'click\', function (e) {\n'
+            'document.querySelector(\'#download-btn' + str(count) + '\').addEventListener(\'click\', function (e) {\n'
             '   var files = e.target.dataset.files.split(\' \');\n'
             '    multiDownload(files);\n'
             '});\n'
-            '</script>\n'
-            '</body>\n'
-            '</html>\n'
-            )
+            '</script>\n')
+    page += ('</body>\n'
+            '</html>\n')
     return page
 
-# - start
+
+# ---------------------------------------- start --------------------------------------
 main_domain = 'http://asbook.net'
 
+#page_number = 1
+#page = html.parse('%s/page/%s/' % (main_domain, page_number))
 page = html.parse('%s/' % (main_domain))
 
 books_list = page.getroot().find_class('b-showshort')
 #print "Numbers of books on page: %s" % len(books_list)
 
+page = ""
+page += print_header()
+
 #if (0 != 1):
 #    div_book = books_list[0].getchildren()
 
+count_download_button_id = 1
 for book in books_list:
     div_book = book.getchildren()
     #print "Count of div in one book %s" % len(div_book)
@@ -96,8 +106,6 @@ for book in books_list:
     # ----
     # create html
 
-    page = ""
-    page += print_header()
 
     page += ('<div class="book_main">\n'
             ' \n'
@@ -114,7 +122,7 @@ for book in books_list:
             '</div>\n')
 
     page += ('<div class="book_playlist">\n'
-            '<button id="download-btn" class="btn btn-primary btn-lg" data-files="')
+            '<button id="download-btn' + str(count_download_button_id) + '" class="btn btn-primary btn-lg" data-files="')
 
     cpl_sort = current_playlist.keys()
     cpl_sort.sort()
@@ -130,10 +138,70 @@ for book in books_list:
             ' \n'
             '</div>\n')
 
-    page += print_footer()
-
-    #print page
-    print(page.encode("utf-8"))
+    count_download_button_id += 1
 
 
 
+page += print_footer(count_download_button_id)
+# print page.encode("utf-8")
+
+# ---------------------- server ----------------------
+
+class myHandler(BaseHTTPRequestHandler):
+	
+    #Handler for the GET requests
+    def do_GET(self):
+        if self.path == "/":
+            self.send_response(200)
+            self.send_header('Content-type','text/html')
+            self.end_headers()
+	    # Send the html message
+	    self.wfile.write(page.encode("utf-8"))
+
+        try:
+            #Check the file extension required and
+	    #set the right mime type
+	    sendReply = False
+            if self.path.endswith(".html"):
+	        mimetype='text/html'
+	        sendReply = True
+	    if self.path.endswith(".jpg"):
+	        mimetype='image/jpg'
+	        sendReply = True
+	    if self.path.endswith(".gif"):
+	        mimetype='image/gif'
+	        sendReply = True
+	    if self.path.endswith(".js"):
+	        mimetype='application/javascript'
+	        sendReply = True
+	    if self.path.endswith(".css"):
+	        mimetype='text/css'
+	        sendReply = True
+
+	    if sendReply == True:
+	         #Open the static file requested and send it
+                 f = open(curdir + sep + self.path) 
+	         self.send_response(200)
+	         self.send_header('Content-type',mimetype)
+	         self.end_headers()
+	         self.wfile.write(f.read())
+	         f.close()
+	    return
+         
+         
+        except IOError:
+            self.send_error(404,'File Not Found: %s' % self.path)
+
+
+try:
+	#Create a web server and define the handler to manage the
+	#incoming request
+	server = HTTPServer(('', PORT_NUMBER), myHandler)
+	print 'Started httpserver on port ' , PORT_NUMBER
+	
+	#Wait forever for incoming htto requests
+	server.serve_forever()
+
+except KeyboardInterrupt:
+	print '^C received, shutting down the web server'
+	server.socket.close()

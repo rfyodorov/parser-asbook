@@ -67,7 +67,7 @@ a.book_pl_link {
 	color: #52026E;
 }
 
-#download-btn {
+button.btn {
 	width: 200px;
 	height: 40px;
 	//position: absolute;
