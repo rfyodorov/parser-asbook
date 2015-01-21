@@ -117,7 +117,7 @@ def getPage(page_number):
                 '</div>\n')
 
         page += ('<div class="book_playlist">\n'
-                '<button id="download-btn' + str(count_download_button_id) + '" class="btn btn-primary btn-lg" data-files="')
+                '<button id="download-btn' + str(count_download_button_id) + '" class="btn btn-primary btn-lg" data-files=\'')
  
         cpl_sort = current_playlist.keys()
         cpl_sort.sort()
@@ -128,7 +128,7 @@ def getPage(page_number):
         #for name, url in current_playlist.items():
         #    page += '    <a href=' + url + '> ' + name + ' <a><br>\n'
 
-        page += ('">Download all mp3</button></br>\n'
+        page += ('\'>Download all mp3</button></br>\n'
                 '</div>\n'
                 ' \n'
                 '</div>\n')
@@ -137,9 +137,14 @@ def getPage(page_number):
 
     
     page += ('</div>\n'
-            '<div class="navigate">\n'
-            ' <a class="navigate" href="/' + str(int(page_number)-1) + '"> ' + str(int(page_number)-1) + ' < </a> ' + str(page_number) +
-            ' <a class="navigate" href="/' + str(int(page_number)+1) + '">> ' + str(int(page_number)+1) + '</a>'
+            '<div class="navigate">\n')
+
+    if int(page_number) > 1:
+        page += ' <a class="navigate" href="/' + str(int(page_number)-1) + '"> ' + str(int(page_number)-1) + ' < </a> ' + str(page_number)
+    else:
+        page += str(page_number)
+
+    page += (' <a class="navigate" href="/' + str(int(page_number)+1) + '">> ' + str(int(page_number)+1) + '</a>'
             '</div>\n')
 
     page += print_footer(count_download_button_id)
